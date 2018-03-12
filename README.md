@@ -15,7 +15,7 @@
 1. use git submodules to add existing project. ``git submodule add https://github.com/netcore/docker-boilerplate.git``
 2. ``cp .env.example .env``
 3. Edit PROJECT, APP_NAME, APP_URL and you should be good to go. Don't forget to add domain to hosts file.
-4. Same action goes for staging environment only APP_URL will be different
+4. Same action goes for staging environment, only you should edit .env.example file and APP_URL will be different.
 
 ##### Known issues
 - Some SOAP client functions might not work on php7.2
