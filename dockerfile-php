@@ -1,0 +1,62 @@
+ARG PHP_VERSION
+ARG APP_ENV
+
+FROM php:$PHP_VERSION
+
+USER root
+
+ENV CFLAGS="-I/usr/src/php"
+ENV COMPOSER_ALLOW_SUPERUSER=1
+ENV COMPOSER_HOME /tmp/composer-cache
+
+RUN echo http://dl-2.alpinelinux.org/alpine/edge/community/ >> /etc/apk/repositories
+
+#iespējams shadow varam nelikt, ja pārejam uz clean build
+RUN apk update && apk add \
+	openssl \
+	git \
+	zip \
+	unzip \
+	shadow \
+	tzdata \
+	supervisor \
+	mysql-client \
+	libpng \ 
+	jpeg \
+	freetype \
+	libmcrypt-dev libxml2-dev libpng-dev jpeg-dev freetype-dev --no-cache
+
+RUN usermod -d /app -u 1000 www-data
+RUN usermod -d /app -u 1000 www-data
+
+#@TODO: Jāielasa no .env/ARG
+RUN cp /usr/share/zoneinfo/Europe/Riga /etc/localtime
+RUN echo "Europe/Riga" > /etc/timezone
+
+RUN docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/
+RUN docker-php-ext-install -j$(nproc) gd pdo pdo_mysql mbstring tokenizer bcmath fileinfo zip xml xmlwriter xmlreader
+
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+
+#@TODO: vai vajag šo?
+RUN mkdir -p /app/public/uploads
+
+WORKDIR /app
+
+COPY src/ ./
+COPY crontab /usr/crontab
+COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+
+#USER www-data @TODO: nevar, jo tmp/composer cache nav writable
+RUN composer install --no-scripts --no-autoloader
+RUN composer dump-autoload
+
+
+#permissions, @TODO: iespējams chmod var tikai konkrētām direktorijām, savādāk slow process
+USER root
+RUN chown -R www-data:www-data /app
+RUN chmod -R 0755 /app
+
+#cleanup
+RUN apk del autoconf g++ make openssl-dev libxml2-dev libmcrypt-dev libpng-dev jpeg-dev freetype-dev
+RUN rm -rf /tmp/*

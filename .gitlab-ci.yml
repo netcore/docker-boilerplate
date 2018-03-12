@@ -1,0 +1,85 @@
+before_script:
+   - echo "[$CI_JOB_NAME] Job for $CI_PROJECT_NAME started by $GITLAB_USER_NAME"
+
+.setup-project: &setup-project
+  before_script:
+     - mkdir -p /docker-data/$CI_PROJECT_NAME
+     - cp -n -R src/storage /docker-data/$CI_PROJECT_NAME/
+     #   - chown -R 1000:1000 /docker-data/$CI_PROJECT_NAME
+     - >
+      [[ ! -f "/docker-data/$CI_PROJECT_NAME/.env" ]] && echo APP_KEY=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1) > /docker-data/$CI_PROJECT_NAME/.env && echo "laravel app key set";
+
+stages:
+  - build
+  - test
+  - deploy
+
+build-project:
+  <<: *setup-project
+  tags:
+    - shell-runner
+  stage: build
+  script:
+    - cp .env.staging .env #docker staging settings
+    - docker login -u gitlab-ci-token -p ${CI_JOB_TOKEN} ${CI_REGISTRY}
+    - docker-compose -f docker-compose.yml -f docker-compose.staging.yml build --pull
+    - docker-compose -f docker-compose.yml -f docker-compose.staging.yml push
+  only:
+    - development
+    - master
+
+run-tests:
+  tags:
+    - shell-runner
+  stage: test
+  script:
+    - echo "tests"
+  only:
+    - development
+    - master
+
+deploy-staging:
+  stage: deploy
+  tags:
+    - shell-runner
+  environment:
+    name: review/$CI_COMMIT_REF_NAME
+    url: https://${CI_PROJECT_NAME}.staging.netcore.lv
+  script:
+    - cp -u -p .env.staging .env #THIS IS FOR DOCKER!! -u update if newer, -p preserver permissions, -n do not copy if exists
+    - docker login -u gitlab-ci-token -p ${CI_JOB_TOKEN} ${CI_REGISTRY}
+    #- docker exec ${CI_PROJECT_NAME}-php php artisan down           vajag pārbaudi vai ir up
+    - docker-compose -f docker-compose.yml -f docker-compose.staging.yml pull
+    - docker-compose -f docker-compose.yml -f docker-compose.staging.yml down
+    - docker-compose -f docker-compose.yml -f docker-compose.staging.yml up -d
+    - sleep 5 && echo "sleep done"
+    - docker exec ${CI_PROJECT_NAME}-php chown -R 1000:1000 /app
+    - docker exec ${CI_PROJECT_NAME}-php chmod -R 0755 /app
+    - docker exec ${CI_PROJECT_NAME}-php composer install #iespējams šis un tālākie jālaiž no www-data usera.
+    - docker exec ${CI_PROJECT_NAME}-php composer dump-autoload #iespējams šis un tālākie jālaiž no www-data usera.
+    - docker exec ${CI_PROJECT_NAME}-php php artisan migrate:fresh --seed
+#    - docker exec ${CI_PROJECT_NAME}-php php artisan view:clear
+#    - docker exec ${CI_PROJECT_NAME}-php php artisan cache:clear
+    - docker exec ${CI_PROJECT_NAME}-php sh -c 'rm -fr /app/storage/framework/cache/*' #why?
+    - docker exec ${CI_PROJECT_NAME}-php sh -c 'rm -fr /app/storage/framework/views/*' #why?
+    - docker exec ${CI_PROJECT_NAME}-php php artisan up
+    - docker exec ${CI_PROJECT_NAME}-php chown -R 1000:1000 /app
+    - docker exec ${CI_PROJECT_NAME}-php chmod -R 0755 /app
+    #- vajadzētu pielikt test uz http 200
+  only:
+    - staging
+  when: on_success
+
+deploy-master:
+  stage: deploy
+  tags:
+    - shell-runner
+  environment:
+    name: review/$CI_COMMIT_REF_NAME
+    url: https://$CI_PROJECT_NAME.staging.netcore.lv
+  script:
+    - echo "deployment to live"
+  only:
+    - master
+  when: on_success
+
