@@ -9,6 +9,7 @@
 * Supervisor
 * Git
 * Composer
+* Wkhtmltopdf
 
 #### Adding to existing project
 1. use git submodules to add existing project. ``git submodule add https://github.com/netcore/docker-boilerplate.git``
