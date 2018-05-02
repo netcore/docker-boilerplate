@@ -15,4 +15,7 @@ services:
             - "/docker-data/${PROJECT}/storage:/app/storage"
             - "/docker-data/${PROJECT}/uploads:/app/public/uploads"
             - "/docker-data/${PROJECT}/.env:/app/.env" #vai tiešām labāk nevar?
-        #command: /bin/sh -c "crontab -u www-data /usr/crontab && /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf" #aktivizējam supervisor && cron && queues.  
+        #command: /bin/sh -c "crontab -u www-data /usr/crontab && /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf" #aktivizējam supervisor && cron && queues.
+    mysql:
+        volumes:
+            - "/docker-data/${PROJECT}/mysql:/var/lib/mysql"
