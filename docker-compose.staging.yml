@@ -8,6 +8,8 @@ services:
           - '443'
         environment:
             - VIRTUAL_HOST=${PROJECT}.staging.netcore.lv
+            - LETSENCRYPT_HOST=${PROJECT}.staging.netcore.lv
+            - LETSENCRYPT_EMAIL=developers@netcore.lv
             - VIRTUAL_PORT=80
             - VIRTUAL_PROTO=http
     php:
