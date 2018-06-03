@@ -6,8 +6,7 @@ FROM php:$PHP_VERSION
 USER root
 
 ENV CFLAGS="-I/usr/src/php"
-ENV COMPOSER_ALLOW_SUPERUSER=1
-ENV COMPOSER_HOME /tmp/composer-cache
+#ENV COMPOSER_ALLOW_SUPERUSER=1
 
 RUN echo http://dl-2.alpinelinux.org/alpine/edge/community/ >> /etc/apk/repositories
 
@@ -36,7 +35,7 @@ RUN echo "Europe/Riga" > /etc/timezone
 RUN docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/
 RUN docker-php-ext-install -j$(nproc) gd pdo pdo_mysql mbstring tokenizer bcmath fileinfo zip xml xmlwriter xmlreader
 
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+#RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
 #@TODO: vai vajag šo?
 RUN mkdir -p /app/public/uploads
@@ -48,8 +47,8 @@ COPY crontab /usr/crontab
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 #USER www-data @TODO: nevar, jo tmp/composer cache nav writable
-RUN composer install --no-scripts --no-autoloader
-RUN composer dump-autoload
+#RUN composer install --no-scripts --no-autoloader
+#RUN composer dump-autoload
 
 
 #permissions, @TODO: iespējams chmod var tikai konkrētām direktorijām, savādāk slow process
