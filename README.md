@@ -21,10 +21,10 @@
 ##### windows
 1. `cp .env.example .env`
 2. Change `COMPOSE_CONVERT_WINDOWS_PATHS=0` to `COMPOSE_CONVERT_WINDOWS_PATHS=1`
-3. Change to correct path for your projects folder `PROJECTS_FOLDER_PATH`
+3. Change to correct path for your projects folder `COMPOSER_CACHE_DIR`
 4. Start docker
 5. Run `nging-start.bat`
-6. Start containers `docker-compose -f docker-compose.yml -f docker-compose.windows.yml up -d`
+6. Start containers `docker-compose up -d`
 
 ##### Known issues
 - Some SOAP client functions might not work on php7.2
