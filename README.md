@@ -21,7 +21,7 @@
 ##### windows
 1. `cp .env.example .env`
 2. Change `COMPOSE_CONVERT_WINDOWS_PATHS=0` to `COMPOSE_CONVERT_WINDOWS_PATHS=1`
-3. Change to correct path for your projects folder `COMPOSER_CACHE_DIR`
+3. Change to correct path for your projects folder `COMPOSER_HOME_DIR`
 4. Start docker
 5. Run `nging-start.bat`
 6. Start containers `docker-compose up -d`
