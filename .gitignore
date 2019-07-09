@@ -1,9 +1,2 @@
-/node_modules
-/public
-/config/price-lists*
-/storage/*.key
-/storage
-/vendor
-.env
 /.idea*
 /.vagrant

@@ -19,6 +19,7 @@ services:
     php:
         container_name: ${PROJECT}-php
         image: ${REGISTRY}/${PROJECT}/php
+        working_dir: '/app'
         build:
             context: .
             dockerfile: dockerfile-php
@@ -26,7 +27,7 @@ services:
                 - PHP_VERSION=${PHP_VERSION}
                 - APP_ENV=${APP_ENV}
         restart: always
-        # command: /bin/sh -c "chown -R 1000:1000 /app"
+        command: /bin/sh -c "crontab -u www-data /usr/crontab && /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisord.conf"
         env_file: .env
         environment:
             TZ: ${APP_TIMEZONE}
@@ -38,27 +39,19 @@ services:
             DB_USERNAME: ${DB_USERNAME}
         depends_on:
             - mysql
-            - redis
         links:
             - mysql
-            - redis
     mysql:
         image: mysql:5.7
         container_name: ${PROJECT}-mysql
         restart: always
-        command: ['--character-set-server=utf8mb4', '--collation-server=utf8mb4_unicode_ci']
+        command: ['--character-set-server=utf8mb4', '--collation-server=utf8mb4_unicode_ci', '--innodb_use_native_aio=0']
         environment:
             - TZ=${APP_TIMEZONE}
             - MYSQL_DATABASE=${DB_DATABASE}
-            - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+            - MYSQL_ROOT_PASSWORD=${DB_PASSWORD}
             - MYSQL_USER=${DB_USERNAME}
             - MYSQL_PASSWORD=${DB_PASSWORD}
-    redis:
-        image: redis:alpine
-        container_name: ${PROJECT}-redis
-        restart: always
-        environment:
-            - TZ=${APP_TIMEZONE}
 networks:
   default:
     external:

@@ -4,14 +4,14 @@ USER root
 RUN echo http://dl-2.alpinelinux.org/alpine/edge/community/ >> /etc/apk/repositories
 RUN apk add openssl shadow --update --upgrade --no-cache
 
-
-RUN adduser -D -H -u 1000 -s /bin/bash www-data
+RUN adduser -D -H -u 1000 -s /bin/bash www-data -G www-data
 
 RUN mkdir -p /app/public/uploads
 
 WORKDIR /app
 
 COPY etc/nginx.conf /etc/nginx/conf.d/default.template
+COPY etc/performance /etc/nginx/performance
 COPY src/public /app/public
 
 RUN chown -R www-data:www-data /app
