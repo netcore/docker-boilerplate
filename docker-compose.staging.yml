@@ -25,5 +25,5 @@ services:
     mysql:
         volumes:
             - "/docker-data/${PROJECT}/mysql:/var/lib/mysql"
-        ports:
-            - "1922:3306"
+#        ports:
+#            - "3306:3306"

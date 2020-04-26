@@ -4,7 +4,7 @@ services:
         image: ${REGISTRY}/${PROJECT}/nginx
         build:
             context: .
-            dockerfile: dockerfile-nginx
+            dockerfile: .docker/dockerfile-nginx
         container_name: ${PROJECT}-nginx
         environment:
             - VIRTUAL_HOST=${PROJECT}.local
@@ -22,7 +22,7 @@ services:
         working_dir: '/app'
         build:
             context: .
-            dockerfile: dockerfile-php
+            dockerfile: .docker/dockerfile-php
             args:
                 - PHP_VERSION=${PHP_VERSION}
                 - APP_ENV=${APP_ENV}

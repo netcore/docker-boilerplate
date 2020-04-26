@@ -23,7 +23,7 @@ RUN apk update && apk add \
 	freetype \
 	libmcrypt-dev libxml2-dev libpng-dev zlib-dev jpeg-dev freetype-dev libzip-dev --no-cache
 
-RUN git clone https://github.com/nikic/php-ast.git && cd php-ast && phpize && ./configure && make && make install && cd .. && rm -rf php-ast && docker-php-ext-enable ast
+#RUN git clone https://github.com/nikic/php-ast.git && cd php-ast && phpize && ./configure && make && make install && cd .. && rm -rf php-ast && docker-php-ext-enable ast
 
 # Set timezone
 RUN cp /usr/share/zoneinfo/Europe/Riga /etc/localtime
@@ -46,16 +46,16 @@ ENV COMPOSER_ALLOW_SUPERUSER=1
 WORKDIR /app
 
 # Copy our composer files before project files, so the process goes faster
-COPY src/composer.json ./
-COPY src/composer.lock ./
+COPY ./composer.json ./
+COPY ./composer.lock ./
 
 # Run composer install without autoload so docker could cache the packages
 RUN composer install --prefer-dist  --no-progress --no-interaction --no-suggest --no-scripts --no-autoloader
 
 # Copy our project files into container
-COPY src/ ./
-COPY crontab /usr/crontab
-COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+COPY ./ ./
+COPY ./.docker/crontab /usr/crontab
+COPY ./.docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 # Run composer install to autoload cache packages
 RUN composer install --prefer-dist --no-progress --no-interaction --optimize-autoloader --no-suggest
